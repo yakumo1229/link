@@ -93,7 +93,6 @@
             pointer-events: auto;
         }
 
-        /* カスタムスクロールバー */
         #admin-panel::-webkit-scrollbar {
             width: 6px;
         }
@@ -112,15 +111,12 @@
         <p class="text-sm text-blue-400 mt-2">未知のサイトへの航路（リンク）をクリックしてください</p>
     </div>
 
-    <!-- 惑星コンテナ -->
     <div id="universe" class="w-full h-full relative"></div>
 
-    <!-- 管理ボタン -->
     <button onclick="checkPassword()" class="fixed bottom-6 right-6 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2 rounded-full backdrop-blur-md transition-all z-50 flex items-center gap-2">
         <span>⚙️</span> 管理
     </button>
 
-    <!-- 管理パネル UI -->
     <div id="admin-panel" class="fixed top-1/2 left-1/2 hidden-panel w-[90%] max-w-md p-6 rounded-2xl z-[100] shadow-2xl">
         <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
             <h2 class="text-xl font-bold">銀河の管理</h2>
@@ -129,13 +125,14 @@
             </button>
         </div>
         
-        <div id="planet-editor-list" class="space-y-6 mb-8">
-            <!-- JSで動的に追加 -->
-        </div>
+        <div id="planet-editor-list" class="space-y-6 mb-8"></div>
 
         <div class="sticky bottom-0 bg-slate-900/80 p-4 -mx-6 -mb-6 flex gap-2 border-t border-white/10">
             <button onclick="saveAll()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold transition-colors">
                 変更を宇宙に反映
+            </button>
+            <button onclick="resetToDefault()" class="bg-red-900/50 hover:bg-red-800 text-white px-4 rounded-xl text-xs transition-colors">
+                初期化
             </button>
             <button onclick="toggleAdmin()" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl transition-colors">
                 閉じる
@@ -147,15 +144,51 @@
         const ADMIN_PASSWORD = "893012";
         let planetsData = [];
 
-        // デフォルトの惑星データ
+        // 【ここを直接編集してください】
+        // 直接URLを埋め込むためのデフォルトデータ
         const defaultPlanets = [
-            { id: Date.now() + 1, name: 'Search', url: 'https://google.com', color: '#ff6b6b', secondaryColor: '#8b0000', size: 100, x: 15, y: 25 },
-            { id: Date.now() + 2, name: 'Github', url: 'https://github.com', color: '#4facfe', secondaryColor: '#003366', size: 130, x: 70, y: 20 },
-            { id: Date.now() + 3, name: 'Video', url: 'https://youtube.com', color: '#f9d423', secondaryColor: '#ff4e50', size: 90, x: 35, y: 70 },
-            { id: Date.now() + 4, name: 'Social', url: 'https://twitter.com', color: '#a18cd1', secondaryColor: '#4b0082', size: 110, x: 65, y: 75 }
+            { 
+                id: 1, 
+                name: 'Google', 
+                url: 'https://google.com', 
+                color: '#ff6b6b', 
+                secondaryColor: '#8b0000', 
+                size: 100, 
+                x: 15, 
+                y: 25 
+            },
+            { 
+                id: 2, 
+                name: 'GitHub', 
+                url: 'https://gemini.google.com/gem/1D47uZxbQOtlSA43Qn0ctQoOZGvUbZqs7?usp=sharing', 
+                color: '#4facfe', 
+                secondaryColor: '#003366', 
+                size: 130, 
+                x: 70, 
+                y: 20 
+            },
+            { 
+                id: 3, 
+                name: 'YouTube', 
+                url: 'https://youtube.com', 
+                color: '#f9d423', 
+                secondaryColor: '#ff4e50', 
+                size: 90, 
+                x: 35, 
+                y: 70 
+            },
+            { 
+                id: 4, 
+                name: 'Twitter', 
+                url: 'https://twitter.com', 
+                color: '#a18cd1', 
+                secondaryColor: '#4b0082', 
+                size: 110, 
+                x: 65, 
+                y: 75 
+            }
         ];
 
-        // 星をランダムに配置
         function createStars() {
             const starfield = document.getElementById('starfield');
             for (let i = 0; i < 150; i++) {
@@ -171,14 +204,13 @@
             }
         }
 
-        // データの読み込み
         function loadPlanets() {
             const saved = localStorage.getItem('cosmic_planets_v2');
-            planetsData = saved ? JSON.parse(saved) : defaultPlanets;
+            // 保存されたデータがある場合はそれを、なければコード内のdefaultPlanetsを使用
+            planetsData = saved ? JSON.parse(saved) : [...defaultPlanets];
             renderUniverse();
         }
 
-        // 宇宙の描画
         function renderUniverse() {
             const container = document.getElementById('universe');
             container.innerHTML = '';
@@ -203,7 +235,6 @@
             });
         }
 
-        // パスワードチェック
         function checkPassword() {
             const pass = prompt("管理用パスワードを入力してください:");
             if (pass === ADMIN_PASSWORD) {
@@ -213,7 +244,6 @@
             }
         }
 
-        // 管理パネルの表示切り替え
         function toggleAdmin() {
             const panel = document.getElementById('admin-panel');
             if (panel.classList.contains('hidden-panel')) {
@@ -226,7 +256,6 @@
             }
         }
 
-        // 管理用リストの描画
         function renderAdminList() {
             const list = document.getElementById('planet-editor-list');
             list.innerHTML = '';
@@ -286,8 +315,6 @@
             let val = value;
             if (key === 'x' || key === 'y') val = parseInt(value);
             planetsData[index][key] = val;
-            
-            // 色が変更された場合、サブカラーも自動生成（少し暗く）
             if (key === 'color') {
                 planetsData[index].secondaryColor = darkenColor(value);
             }
@@ -304,12 +331,17 @@
             localStorage.setItem('cosmic_planets_v2', JSON.stringify(planetsData));
             renderUniverse();
             toggleAdmin();
-            
-            const msg = document.createElement('div');
-            msg.innerText = "宇宙の創造が完了しました。";
-            msg.className = "fixed top-5 left-1/2 -translate-x-1/2 bg-blue-600 px-6 py-2 rounded-full shadow-lg z-[200]";
-            document.body.appendChild(msg);
-            setTimeout(() => msg.remove(), 2000);
+        }
+
+        // コードに記述したデフォルト値に強制リセットする関数
+        function resetToDefault() {
+            if(confirm("コード内のデフォルト設定に戻しますか？保存した変更は消去されます。")) {
+                localStorage.removeItem('cosmic_planets_v2');
+                planetsData = [...defaultPlanets];
+                renderUniverse();
+                renderAdminList();
+                alert("初期化しました。");
+            }
         }
 
         window.onload = () => {
